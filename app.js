@@ -1,43 +1,54 @@
-window.addEventListener("load",()=>{
+window.addEventListener("load", () => {
     let long;
     let lat;
-
-    let temperatureDescription=document.querySelector(".temperature-description");
-    let temperatureDegree=document.querySelector(".location.degree");
-    let timeZone=document.querySelector(".location.timezone");
-    let icono=document.querySelector("icon1");
+    let temperatureDescription = document.querySelector(
+        ".temperature-description"
+    );
+    let temperatureDegree = document.querySelector(".temperature-degree");
+    let locationTimezone = document.querySelector(".location-timezone");
+    let temperatureSection = document.querySelector(".temperature");
+    let temperatureSpan = document.querySelector(".temperature span");
 
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position=>{
+        navigator.geolocation.getCurrentPosition(position => {
             long = position.coords.longitude;
             lat = position.coords.latitude;
-            console.log(`Latitud:${lat} - Longitud:${long}`);
 
-            let proxy="https://cors-anywhere.herokuapp.com/"
-            let url=`${proxy}https://api.darksky.net/forecast/b5464264d52899ac05464e305985dac1/${lat},${long}`
+            const proxy = "https://cors-anywhere.herokuapp.com/";
 
-            fetch(url)
-            .then(response=>{return response.json();})
-            .then(datos=>{
-                console.log(datos)
-                // console.log(datos.currently)
-                const {temperature,summary,icon}=datos.currently;
+            const api = `${proxy}https://api.darksky.net/forecast/b5464264d52899ac05464e305985dac1/${lat},${long}`;
 
-                temperatureDescription.textContent=summary;
-                temperatureDegree.textContent=temperature;
-                timeZone.textContent=datos.timezone;
+            fetch(api)
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    const { temperature, summary, icon } = data.currently;
 
-                setIcons(icon,icono);
-            });
-        })
-        
-        function setIcons(icon,iconID) {
-            let skycons=new Skycons({"color":"pink"});
-            const currentIcon=icon.replace(/-/g,"_").toUpperCase();
-            skycons.play();
-            return skycons.set(iconID,Skycons[currentIcon]);
-        }
-    }else{
-        alert("Tienes que activar la geolocalizacion");
+                    temperatureDegree.textContent = temperature;
+                    temperatureDescription.textContent = summary;
+                    locationTimezone.textContent = data.timezone;
+
+                    let celsius = (temperature - 32) * (5 / 9);
+
+                    setIcons(icon, document.querySelector(".icon"));
+
+                    temperatureSection.addEventListener("click", () => {
+                        if (temperatureSpan.textContent === "F") {
+                            temperatureSpan.textContent = "C";
+                            temperatureDegree.textContent = Math.floor(celsius);
+                        } else {
+                            temperatureSpan.textContent = "F";
+                            temperatureDegree.textContent = temperature;
+                        }
+                    });
+                });
+        });
     }
-})
+    function setIcons(icon, iconID) {
+        const skycons = new Skycons({ color: "white" });
+        const currentIcon = icon.replace(/-/g, "_").toUpperCase();
+        skycons.play();
+        return skycons.set(iconID, Skycons[currentIcon]);
+    }
+});
